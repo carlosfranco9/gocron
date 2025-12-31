@@ -456,7 +456,7 @@ func SendNotification(taskModel models.Task, taskResult TaskResult) {
 		"output":           taskResult.Result,
 		"status":           statusName,
 		"task_id":          taskModel.Id,
-		"remark":  			taskModel.Remark,
+		"remark":           taskModel.Remark,
 	}
 	notify.Push(msg)
 }
@@ -491,6 +491,34 @@ func execJob(handler Handler, taskModel models.Task, taskUniqueId int64) TaskRes
 				time.Sleep(time.Duration(i) * time.Minute)
 			}
 		}
+	}
+
+	// 备用节点运行。
+	if taskModel.StandbyNode != 0 {
+		//只运行一次
+		standbyHost := &models.Host{}
+
+		logger.Info("运行备用节点")
+		err := standbyHost.Find(int(taskModel.StandbyNode))
+		if err != nil {
+			// get err , dont run rask
+			logger.Warnf("备用节点未找到, id= %d", taskModel.StandbyNode)
+			return TaskResult{Result: output, Err: err, RetryTimes: taskModel.RetryTimes}
+		}
+
+		detail := models.TaskHostDetail{
+			TaskHost: models.TaskHost{
+				Id:     1,
+				TaskId: taskModel.Id,
+				HostId: taskModel.StandbyNode,
+			},
+			Name:  standbyHost.Name,
+			Port:  standbyHost.Port,
+			Alias: standbyHost.Alias,
+		}
+		taskModel.Hosts = []models.TaskHostDetail{detail}
+
+		output, err = handler.Run(taskModel, taskUniqueId)
 	}
 
 	return TaskResult{Result: output, Err: err, RetryTimes: taskModel.RetryTimes}

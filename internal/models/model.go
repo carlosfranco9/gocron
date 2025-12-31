@@ -23,12 +23,13 @@ var TablePrefix = ""
 var Db *xorm.Engine
 
 const (
-	Disabled Status = 0 // 禁用
-	Failure  Status = 0 // 失败
-	Enabled  Status = 1 // 启用
-	Running  Status = 1 // 运行中
-	Finish   Status = 2 // 完成
-	Cancel   Status = 3 // 取消
+	Disabled     Status = 0 // 禁用
+	Failure      Status = 0 // 失败
+	Enabled      Status = 1 // 启用
+	Running      Status = 1 // 运行中
+	Finish       Status = 2 // 完成
+	Cancel       Status = 3 // 取消
+	BackupFinish Status = 4 // 备份节点运行完成，说明主节点是运行失败 的
 )
 
 const (

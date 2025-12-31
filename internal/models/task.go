@@ -63,6 +63,8 @@ type Task struct {
 	BaseModel        `json:"-" xorm:"-"`
 	Hosts            []TaskHostDetail `json:"hosts" xorm:"-"`
 	NextRunTime      time.Time        `json:"next_run_time" xorm:"-"`
+
+	StandbyNode int16 `json:"standby_node" xorm:"smallint notnull default 0"` // 备选节点
 }
 
 func taskHostTableName() []string {
@@ -83,7 +85,7 @@ func (task *Task) UpdateBean(id int) (int64, error) {
 	return Db.ID(id).
 		Cols(`name,spec,protocol,command,timeout,multi,
 			retry_times,retry_interval,remark,notify_status,
-			notify_type,notify_receiver_id, dependency_task_id, dependency_status, tag,http_method, notify_keyword`).
+			notify_type,notify_receiver_id, dependency_task_id, dependency_status, tag,http_method, notify_keyword,standby_node`).
 		Update(task)
 }
 

@@ -108,6 +108,18 @@
               </el-select>
             </el-form-item>
           </el-col>
+          <el-col :span="8">
+            <el-form-item label="备用任务节点(任务节点重试失败时运行一次)">
+              <el-select key="shell" v-model="selectedStandByHosts" filterable multiple placeholder="请选择">
+                <el-option
+                  v-for="item in hosts"
+                  :key="item.id"
+                  :label="item.alias + ' - ' + item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
         </el-row>
         <el-row>
           <el-col :span="16">
@@ -282,6 +294,7 @@ export default {
         notify_keyword: '',
         retry_times: 0,
         retry_interval: 0,
+        standby_node: 0,
         remark: ''
       },
       formRules: {
@@ -393,6 +406,7 @@ export default {
       mailUsers: [],
       slackChannels: [],
       selectedHosts: [],
+      selectedStandByHosts: [],
       selectedMailNotifyIds: [],
       selectedSlackNotifyIds: []
     }
@@ -450,6 +464,10 @@ export default {
         taskData.hosts.forEach((v) => {
           this.selectedHosts.push(v.host_id)
         })
+
+        if (taskData.standby_node !== 0) {
+          this.selectedStandByHosts.push(taskData.standby_node)
+        }
       }
 
       if (this.form.notify_status > 1) {
@@ -507,6 +525,9 @@ export default {
       }
       if (this.form.notify_status > 1 && this.form.notify_type === 3) {
         this.form.notify_receiver_id = this.selectedSlackNotifyIds.join(',')
+      }
+      if (this.form.protocol === 2 && this.selectedStandByHosts.length > 0) {
+        this.form.standby_node = this.selectedStandByHosts.join(',')
       }
       taskService.update(this.form, () => {
         this.$router.push('/task')
